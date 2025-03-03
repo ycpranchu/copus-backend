@@ -37,6 +37,23 @@ if ($data['fetch_type'] == 'protocol') {
         echo json_encode(["success" => false, "message" => "Database error: " . $e->getMessage()]);
         http_response_code(500);
     }
+} else if ($data['fetch_type'] == 'course_id') {
+    $course_id = intval($data['course_id']);
+
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM courses WHERE id = ?");
+        $stmt->execute([$course_id]);
+        $course = $stmt->fetch(PDO::FETCH_ASSOC);
+        $protocol_id = $course['protocol_id'];
+
+        $stmt = $pdo->prepare("SELECT * FROM protocols WHERE id = ?");
+        $stmt->execute([$protocol_id]);
+        $protocol = $stmt->fetch(PDO::FETCH_ASSOC);
+        echo json_encode(["success" => true, "protocol" => $protocol, "course_name" => $course['name'], "active" => $course['active']]);
+    } catch (PDOException $e) {
+        echo json_encode(["success" => false, "message" => "Database error: " . $e->getMessage()]);
+        http_response_code(500);
+    }
 } else {
     $protocol_id = intval($data['protocol_id']);
 

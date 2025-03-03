@@ -18,6 +18,7 @@ try {
     $shared_stmt = $pdo->prepare("SELECT * FROM courses WHERE FIND_IN_SET(?, owner) > 0");
     $shared_stmt->execute([$user_id]);
     $shared_courses = $shared_stmt->fetchAll(PDO::FETCH_ASSOC);
+
     echo json_encode(["success" => true, "my_courses" => $my_courses, "shared_courses" => $shared_courses]);
 } catch (PDOException $e) {
     echo json_encode(["success" => false, "message" => "Database error: " . $e->getMessage()]);

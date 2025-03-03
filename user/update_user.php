@@ -10,8 +10,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 // Decode the JSON input from the request body
 $data = json_decode(file_get_contents("php://input"), true);
 
+$user_id = intval($data['user_id']); // 確保是整數
 $username = trim($data['username']);
 $password = password_hash($data['password'], PASSWORD_DEFAULT); // 加密密碼
+
 
 try {
     // 檢查 Username 是否已經註冊
@@ -24,13 +26,12 @@ try {
         exit;
     }
 
-    // 插入新用戶
-    $stmt = $pdo->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
-    $stmt->execute([$username, $password]);
+    $stmt = $pdo->prepare("UPDATE users SET username = ?, password = ? WHERE id = ?");
+    $stmt->execute([$username, $password, $user_id]);
 
-    echo json_encode(["success" => true, "message" => "註冊成功！"]);
-    http_response_code(201);
+    echo json_encode(["success" => true, "message" => "更新成功！"]);
+    http_response_code(200);
 } catch (PDOException $e) {
     echo json_encode(["success" => false, "message" => "資料庫錯誤: " . $e->getMessage()]);
-    http_response_code(201);
+    http_response_code(500);
 }

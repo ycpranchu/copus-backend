@@ -10,6 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $data = json_decode(file_get_contents("php://input"), true);
 $course_id = $data['course_id'];
 $course_name = $data['course_name'];
+$status_names = $data['status_names'];
 
 $filename = "{$course_name}.csv";
 $file_path = "exports/{$filename}";
@@ -25,12 +26,15 @@ try {
     }
 
     fwrite($output, "\xEF\xBB\xBF");
-    fputcsv($output, ['記錄', '記錄時間']);
+
+    $status_names_array = explode(",", $status_names);
+    fputcsv($output, array_merge($status_names_array, ["timestamp"]));
 
     foreach ($records as $row) {
-        fputcsv($output, [$row['record'], $row['record_at']]);
+        $record_data = explode(",", $row['record']);
+        $csv_row = array_merge($record_data, [$row['record_at']]);
+        fputcsv($output, $csv_row);
     }
-
     fclose($output);
 
     // 設定 Headers 讓瀏覽器下載

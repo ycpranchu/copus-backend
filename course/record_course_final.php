@@ -13,20 +13,44 @@ $log_file = "logs/$course_id.txt";
 
 try {
     $lines = file($log_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    $mergedRecords = [];
 
-    $all_words = [];
     foreach ($lines as $line) {
-        $words = explode(",", $line);
-        $all_words = array_merge($all_words, $words);
+        $parts = explode(",", $line);
+
+        $username = $parts[0];  // 使用者名稱
+        $message = $parts[1];   // 訊息
+        $status = array_slice($parts, 2); // 取得狀態 (0,1)
+
+        $mergedRecords[$username]["message"][] = $message;
+
+        // 合併狀態（邏輯 OR 運算：如果有 1 則結果為 1）
+        foreach ($status as $index => $value) {
+            $mergedRecords[$username]["status"][$index] |= intval($value);
+        }
     }
 
-    $unique_words = array_unique($all_words); // 移除重複詞
-    $record = implode(",", $unique_words); // 重新合併為字串
+    // 轉換成儲存格式
+    $finalRecords = [];
+    foreach ($mergedRecords as $username => $data) {
+        $mergedMessage = implode(" ", array_unique($data["message"])); // 合併訊息並去重複
+        $mergedStatus = implode(",", $data["status"]); // 合併狀態
+        $finalRecords[] = "$username,$mergedMessage,$mergedStatus";
+    }
 
     $stmt = $pdo->prepare("INSERT INTO courses_record (course_id, record) VALUES (?, ?)");
-    $stmt->execute([$course_id, $record]);
 
+    foreach ($mergedRecords as $username => $data) {
+        $mergedMessage = implode(" ", array_unique($data["message"])); // 合併訊息並去重複
+        $mergedStatus = implode(",", $data["status"]); // 合併狀態
+        $recordString = "$username,$mergedMessage,$mergedStatus";
+
+        $stmt->execute([$course_id, $recordString]); // **分行插入**
+    }
+
+    // 清空 log 檔案
     file_put_contents($log_file, '');
+    
     echo json_encode(["success" => true, "message" => "Record saved successfully"]);
 } catch (Exception $e) {
     error_log("Error processing log: " . $e->getMessage());

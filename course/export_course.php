@@ -20,6 +20,14 @@ try {
     $stmt->execute([$course_id]);
     $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // **對 $records 進行排序** (根據 username 排序)
+    usort($records, function ($a, $b) {
+        $recordDataA = explode(",", $a['record']);
+        $recordDataB = explode(",", $b['record']);
+
+        return strcmp($recordDataA[0], $recordDataB[0]);
+    });
+
     $output = fopen($file_path, 'w');
     if (!$output) {
         throw new Exception("Failed to open file for writing");

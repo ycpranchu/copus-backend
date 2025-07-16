@@ -15,7 +15,7 @@ $protocol_id = intval($data['protocol_id']);
 $owners_id = trim($data['owners_id']);
 
 try {
-    $stmt = $pdo->prepare("INSERT INTO courses (name, protocol_id, creater, owner, created_at) VALUES (?, ?, ?, ?, NOW())");
+    $stmt = $pdo->prepare("INSERT INTO courses (name, protocol_id, creater, owner, active, activer, created_at) VALUES (?, ?, ?, ?, 0, -1, NOW())");
     $stmt->execute([$course_name, $protocol_id, $user_id, $owners_id]);
     echo json_encode(["success" => true]);
 } catch (PDOException $e) {

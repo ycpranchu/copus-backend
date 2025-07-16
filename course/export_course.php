@@ -12,7 +12,11 @@ $course_id = $data['course_id'];
 $course_name = $data['course_name'];
 $status_names = $data['status_names'];
 
-$filename = "{$course_name}.csv";
+// $filename = "{$course_name}.csv";
+// $file_path = "exports/{$filename}";
+
+$sanitized_course_name = preg_replace('/[\/\\\\:*?"<>|]/u', '_', $course_name);
+$filename = "{$sanitized_course_name}.csv";
 $file_path = "exports/{$filename}";
 
 try {
